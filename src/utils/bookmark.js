@@ -41,7 +41,7 @@ function createBookmark(tag) {
         },
         (node) => node
     )
-},
+}
 function getChildrenTag() {
     let tag,
         tagId,
