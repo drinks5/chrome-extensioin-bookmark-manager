@@ -99,6 +99,7 @@ export default {
     },
     getBookmarks() {
       let that = this
+      debugger;
       this.loadingBookmarks = true
       chrome.bookmarks.getTree(function (node) {
         let result = getBookmarks(node)

@@ -1,6 +1,4 @@
-console.log('background script working!!!')
-
-
+import { createBookmark } from '../utils/bookmark'
 /*
 bookmarks: 
 {
@@ -71,6 +69,10 @@ export const getBookmarks = function (bookmarkTreeNodes) {
     }
 };
 
+chrome.commands.onCommand.addListener(function (command, tab) {
+    createBookmark('1', tab)
+
+})
 
 /*
 Hot Reload

@@ -13,6 +13,14 @@
       "run_at": "document_end"
     }
   ],
+  "commands": {
+    "bookmark": {
+      "suggested_key": {
+        "default": "Alt+H"
+      },
+      "description": "打开书签管理器."
+    }
+  },
   "description": "vue-chrome-extension-boilerplate",
   "icons": {
     "16": "assets/icons/icon_16.png",
