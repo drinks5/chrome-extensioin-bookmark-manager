@@ -1,0 +1,39 @@
+[
+    {
+        "dateAdded": 1611884577806,
+        "id": "-1",
+        "title": "Bookmark",
+        "children": [
+            {
+                "dateAdded": 1611884577806,
+                "id": "0",
+                "title": "folder-a",
+                "parentId": "-1",
+                "children": [
+                    {
+                        "dateAdded": 1611884577806,
+                        "id": "1",
+                        "parentId": "0",
+                        "title": "test-a",
+                        "url": "www.google.com"
+                    }
+                ]
+            },
+            {
+                "dateAdded": 1611884577806,
+                "id": "2",
+                "parentId": "-1",
+                "title": "folder-b",
+                "children": [
+                    {
+                        "dateAdded": 1611884577806,
+                        "id": "3",
+                        "title": "test-b",
+                        "parentId": "2",
+                        "url": "www.google.com"
+                    }
+                ]
+            }
+        ]
+    }
+]

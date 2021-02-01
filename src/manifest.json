@@ -1,27 +1,20 @@
 {
   "background": {
-    "scripts": ["./background.js"]
+    "scripts": [
+      "./background.js"
+    ]
   },
   "browser_action": {
     "default_popup": "./popup.html"
   },
-  "content_scripts": [
-    {
-      "all_frames": false,
-      "js": ["./contentScripts.js"],
-      "matches": ["http://*/*", "https://*/*"],
-      "run_at": "document_end"
-    }
-  ],
+  "description": "tag base bookmark manager",
   "commands": {
-    "bookmark": {
+    "_execute_browser_action": {
       "suggested_key": {
-        "default": "Alt+H"
-      },
-      "description": "打开书签管理器."
+        "default": "Ctrl+D"
+      }
     }
   },
-  "description": "vue-chrome-extension-boilerplate",
   "icons": {
     "16": "assets/icons/icon_16.png",
     "32": "assets/icons/icon_32.png",
@@ -29,19 +22,15 @@
     "128": "assets/icons/icon_128.png"
   },
   "manifest_version": 2,
-  "name": "vue-chrome-extension-boilerplate",
+  "name": "Bookmark Manager",
   "options_ui": {
     "chrome_style": false,
     "page": "./options.html"
   },
   "permissions": [
-    "http://*/*",
-    "https://*/*",
     "background",
-    "storage",
-    "tabs",
-    "webRequest",
-		"bookmarks"
+    "activeTab",
+    "bookmarks"
   ],
   "version": "1.0.0",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"

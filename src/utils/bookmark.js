@@ -1,5 +1,3 @@
-import { NoEmitOnErrorsPlugin } from "webpack"
-
 /*
 1. 如果标签不存在，新建书签
 2. 如果书签目录存在原始目录,更新书签
@@ -11,16 +9,16 @@ export function handleTags(page, tags, originTags, tagMap, root) {
         if (!tagMap.has(tag)) {
             return createParentBookmark(page, root, tag)
         }
-        if (!originTags.indexOf(tag)) {
-            return createBookmark(tagMap[tag].id, page)
+        if ((originTags.indexOf(tag) < 0)) {
+            return createBookmark(tagMap.get(tag).id, page)
         }
     })
     const deleteTags = originTags.filter(tag => {
         if (tags.indexOf(tag) > -1) {
             return false
         }
-        return tagMap[tag].id
-    })
+        return true
+    }).map(tag => { return tagMap.get(tag).id })
     chrome.bookmarks.search(page.url, (nodes) => {
         nodes.map(node => {
             if (node.url !== page.url) {
@@ -69,7 +67,7 @@ function updateBookmark(page, node) {
 function removeBookmark(node) {
     chrome.bookmarks.remove(node.id, () => { })
 }
-export function createBookmark(parentId, page) {
+function createBookmark(parentId, page) {
     chrome.bookmarks.create(
         {
             parentId: parentId,
@@ -79,3 +77,56 @@ export function createBookmark(parentId, page) {
         (node) => node
     )
 }
+function getBookmark(node, bookmarkMap, tagIdMap) {
+    let bookmark;
+    let parentTitle = tagIdMap.get(node.parentId)
+    let tag = { id: node.id, parentId: node.parentId, parentTitle: parentTitle, title: node.title }
+    if (bookmarkMap.get(node.url)) {
+        // 一个书签url存在多个目录
+        bookmark = bookmarkMap.get(node.url)
+        bookmark.tags.push(tag)
+    } else {
+        bookmark = {
+            tags: [tag],
+            url: node.url,
+            dateAdded: new Date(node.dateAdded)
+        };
+
+    }
+    return bookmark
+
+}
+function parseBookmarks(nodes, bookmarkMap, tagMap, tagIdMap) {
+    let tag, bookmark;
+    if (!nodes) {
+        return
+    }
+    nodes.map(node => {
+        if (node.url) {
+            bookmark = getBookmark(node, bookmarkMap, tagIdMap)
+            bookmarkMap.set(node.url, bookmark)
+        } else if (node.title) {
+            tag = { id: node.id, name: node.title, parentId: node.parentId }
+            tagMap.set(node.title, tag)
+            tagIdMap.set(node.id, node.title)
+        }
+        if (node.children) {
+            parseBookmarks(node.children || [], bookmarkMap, tagMap, tagIdMap);
+        }
+    })
+
+}
+
+export const getBookmarks = function (bookmarkTreeNodes) {
+    /*
+    bookmarkMap: {node.url: {tags: [{title: node.title, id: node.id, parentId: node.parentId}], url: node.url}}
+    tagMap: {node.title: {id: node.id, name: node.title, parentId: node.parentId}}
+    */
+    var bookmarkMap = new Map()
+    var tagMap = new Map();
+    var tagIdMap = new Map();
+    parseBookmarks(bookmarkTreeNodes, bookmarkMap, tagMap, tagIdMap);
+    return {
+        bookmarkMap: bookmarkMap, tagMap: tagMap
+    }
+};

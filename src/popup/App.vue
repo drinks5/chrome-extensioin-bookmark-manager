@@ -3,10 +3,10 @@
     <v-main>
       <v-container fluid>
         Title
-        <v-text-field v-model="title" required></v-text-field>
+        <v-text-field v-model="tab.title" required></v-text-field>
 
         Url
-        <v-text-field v-model="url" required></v-text-field>
+        <v-text-field v-model="tab.url" required></v-text-field>
 
         Tags
         <v-combobox
@@ -32,57 +32,41 @@
 </template>
 
 <script>
-import { getBookmarks } from '../background'
 import { getBestMatchTags } from '../utils'
+import { handleTags, getBookmarks } from '../utils/bookmark'
 
 export default {
   name: 'BookMarkManager',
   data() {
     return {
-      bookmark: {},
-      bookmarks: new Map(),
-      title: '',
-      url: '',
-      originUrl: '',
-      originTitle: '',
+      rootBookmark: {},
+      tab: { url: '', title: '' },
       originTags: [],
       tags: [],
       tag: '',
       search: '',
       tagItems: [],
       tagGroups: [],
-      tagMaps: new Map(),
-      loadingBookmarks: false,
+      tagMap: new Map(),
       loadingQuery: false,
-      variable: 'null',
     }
   },
   created() {
+    this.initBookmark()
     this.getBookmarks()
-    this.getBookmark()
   },
-  mounted() {},
   watch: {
     search(val) {
       val && val !== this.select && this.querySelections(val)
     },
-    loadingBookmarks(val) {
-      let that = this
-      if (this.bookmarks.get(this.url)) {
-        this.tags = this.bookmarks.get(this.url).tags
-      }
-      if (!this.tags.length) {
-        this.tags = getBestMatchTags(this.url, this.title, this.tagGroups)
-      }
-    },
   },
   methods: {
-    getBookmark() {
+    initBookmark() {
       let that = this
       chrome.bookmarks.search('Bookmark', function (nodes) {
         let items = nodes.filter((x) => !x.url)
         if (items.length) {
-          that.bookmark = items[0]
+          that.rootBookmark = items[0]
         } else {
           chrome.bookmarks.create(
             {
@@ -91,7 +75,7 @@ export default {
               title: 'Bookmark',
             },
             function (node) {
-              that.bookmark = node
+              that.rootBookmark = node
             }
           )
         }
@@ -99,20 +83,25 @@ export default {
     },
     getBookmarks() {
       let that = this
-      debugger;
-      this.loadingBookmarks = true
-      chrome.bookmarks.getTree(function (node) {
-        let result = getBookmarks(node)
-        that.tagMaps = result.tagMap
-        that.tagGroups = [...result.tagMap.keys()]
-        that.bookmarks = result.bookmarkMap
+      chrome.bookmarks.getTree(function (nodes) {
+        let { bookmarkMap, tagMap } = getBookmarks(nodes)
+        that.tagMap = tagMap
+        that.tagGroups = [...tagMap.keys()]
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
           const tab = tabs[0]
-          if (tab) {
-            that.originUrl = that.url = tab.url
-            that.originTitle = that.title = tab.title
+          that.tab = tab || { url: '', title: '' }
+          if (!tab) {
+            return
           }
-          that.loadingBookmarks = false
+          if (bookmarkMap.get(tab.url)) {
+            that.tags = bookmarkMap.get(tab.url).tags.map((tag) => {
+              return tag.parentTitle
+            })
+            that.originTags = that.tags
+          }
+          if (!that.tags.length) {
+            that.tags = getBestMatchTags(tab.url, tab.title, that.tagGroups)
+          }
         })
       })
     },
@@ -125,81 +114,18 @@ export default {
     },
     tagBlur() {},
     save() {
-      this.getChildrenTag()
+      handleTags(
+        this.tab,
+        this.tags,
+        this.originTags,
+        this.tagMap,
+        this.rootBookmark
+      )
+      window.close()
     },
     remove() {
-      this.getChildrenTag()
-    },
-    createParentBookmarks(tagValue) {
-      // 新建标签目录和标签
-      let that = this;
-      chrome.bookmarks.create(
-        {
-          parentId: that.bookmark.id,
-          title: tagValue,
-        },
-        (node) => {
-          chrome.bookmarks.create(
-            {
-              parentId: node.id,
-              url: this.url,
-              title: this.title,
-            },
-            (node) => node
-          )
-        }
-      )
-    },
-    updateBookmark(tag) {
-      // 如果存在书签
-      let that = this
-      chrome.bookmarks.search(that.url, (node) => {
-        node = node[0]
-        chrome.bookmarks.update(
-          node.id,
-          {
-            url: that.url,
-            title: that.title,
-          },
-          (node) => node
-        )
-      })
-    },
-    createBookmark(tag) {
-      let that = this
-      chrome.bookmarks.create(
-        {
-          parentId: tag.id,
-          url: that.url,
-          title: that.title,
-        },
-        (node) => node
-      )
-    },
-    deleteBookmarks() {
-
-    },
-    getChildrenTag() {
-      let tag,
-        tagId,
-        that = this
-      this.tags.map((tagValue) => {
-        if (!that.tagMaps.has(tagValue)) {
-          return that.createParentBookmarks()
-        }
-        if (that.originTags.indexOf(tagValue) < 0) {
-          return that.deleteBookmarks()
-        }
-        tagId = that.tagMaps.get(tagValue).id
-        chrome.bookmarks.get(tagId, function (tag) {
-          tag = tag[0]
-          if (that.originTags.indexOf(tag.title)) {
-            that.updateBookmark(tag)
-          } else {
-            that.createBookmark(tag)
-          }
-        })
-      })
+      this.tags = []
+      this.save()
     },
   },
 }

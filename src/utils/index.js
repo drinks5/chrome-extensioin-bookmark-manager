@@ -5,8 +5,8 @@ export function getBestMatchTags(url, title, tagGroups) {
 		key,
 		result,
 		seen = new Set(),
-		minRate = 0.5,
 		maxNumber = 3,
+		minRate = 0.5,
 		toReplace = ['.', '/', '-', ':'];
 	toReplace.map(x => {
 		title = title.replaceAll(x, ' ')

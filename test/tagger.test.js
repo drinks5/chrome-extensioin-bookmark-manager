@@ -37,12 +37,13 @@ test('chrome bookmarks', async () => {
             'devtools'
         ]
     });
-    devModeToggler(browser)
+    // devModeToggler(browser)
     const page = await browser.newPage()
     await page.waitForTimeout(100);
     await page.goto("https://www.baidu.com")
+    await page.keyboard.press('Esc')
     await page.keyboard.press('Alt')
     await page.keyboard.press('H')
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(50000);
     await browser.close()
 })

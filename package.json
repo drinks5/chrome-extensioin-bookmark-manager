@@ -21,6 +21,7 @@
     "@babel/preset-react": "^7.12.10",
     "bulma-fluent": "^0.3.25",
     "chrome-extension-async": "^3.4.1",
+    "puppeteer": "^5.5.0",
     "puppeteer-core": "^5.5.0",
     "similarity": "^1.2.1",
     "string-similarity": "^4.0.3",
