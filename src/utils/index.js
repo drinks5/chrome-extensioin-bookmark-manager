@@ -4,6 +4,7 @@ export function getBestMatchTags(url, title, tagGroups) {
 	let rate,
 		key,
 		result,
+		parts,
 		seen = new Set(),
 		maxNumber = 3,
 		minRate = 0.5,
@@ -13,7 +14,7 @@ export function getBestMatchTags(url, title, tagGroups) {
 		url = url.replaceAll(x, ' ')
 	})
 
-	let parts = title.split(' ')
+	parts = title.split(' ')
 	parts = parts.concat(url.split(' '))
 	result = parts.map(string => {
 		return tagGroups.map(tag => {

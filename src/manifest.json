@@ -5,7 +5,8 @@
     ]
   },
   "browser_action": {
-    "default_popup": "./popup.html"
+    "default_popup": "./popup.html",
+    "default_icon": "assets/icons/icon_128.png"
   },
   "description": "tag base bookmark manager",
   "commands": {
@@ -32,6 +33,6 @@
     "activeTab",
     "bookmarks"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

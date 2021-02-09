@@ -14,10 +14,7 @@ export function handleTags(page, tags, originTags, tagMap, root) {
         }
     })
     const deleteTags = originTags.filter(tag => {
-        if (tags.indexOf(tag) > -1) {
-            return false
-        }
-        return true
+        return tags.indexOf(tag) < 0
     }).map(tag => { return tagMap.get(tag).id })
     chrome.bookmarks.search(page.url, (nodes) => {
         nodes.map(node => {
